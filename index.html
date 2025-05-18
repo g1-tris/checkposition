@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location Tracker</title>
+</head>
+<body>
+  <h1>Check-In</h1>
+  <p>We need your location to complete the check-in. Please allow location access when prompted.</p>
+
+  <script>
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          // Show location on screen
+          document.body.innerHTML += `<p>Your location: ${latitude}, ${longitude}</p>`;
+        },
+        function(error) {
+          alert("Location access denied or unavailable.");
+        }
+      );
+    } else {
+      alert("Geolocation not supported in your browser.");
+    }
+  </script>
+</body>
+</html>
